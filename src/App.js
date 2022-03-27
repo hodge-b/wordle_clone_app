@@ -183,6 +183,7 @@ export default function App(){
                     onclick  ={onKeyPressHandler} 
                 /> : app.isWon ? (<><Confetti /><button className='btn--newGame' onClick={newGame}>Play New Wordle</button></>) : <button className='btn--newGame' onClick={newGame}>Play New Wordle</button>}
             </>}
+            <footer>Copyright © 2022 bradley hodge. All Rights Reserved.</footer>
         </main>
     )
 }
