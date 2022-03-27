@@ -141,6 +141,7 @@ export default function App(){
             <>
                 <div className="btn btn--daily" onClick={onClickHandler}>daily wordle</div>
                 <div className="btn btn--new" onClick={onClickHandler}>new wordle</div>
+                <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer>
             </>: 
             <>
                 <WordleRow
@@ -181,9 +182,13 @@ export default function App(){
                     value    = {rows}
                     currentRow = {currentRow}
                     onclick  ={onKeyPressHandler} 
-                /> : app.isWon ? (<><Confetti /><button className='btn--newGame' onClick={newGame}>Play New Wordle</button></>) : <button className='btn--newGame' onClick={newGame}>Play New Wordle</button>}
+                /> : app.isWon ? 
+                (<><Confetti />
+                <button className='btn--newGame' onClick={newGame}>Play New Wordle</button>
+                <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></>) : 
+                <><button className='btn--newGame' onClick={newGame}>Play New Wordle</button>
+                <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></>}
             </>}
-            <footer>Copyright © 2022 bradley hodge. All Rights Reserved.</footer>
         </main>
     )
 }
