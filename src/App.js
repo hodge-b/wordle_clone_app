@@ -2,7 +2,7 @@ import {checkForClearKey, checkForEnterKey, checkForTargetWord, checkForWord} fr
 import {setupRows, setupGame, copyArray} from './utilities/Utilities';
 import {setupGuessList, setupWordList, setupWord} from './utilities/WordList';
 import VirtualKeyboard, {setupKeyboard, updateKeyboard} from './components/VirtualKeyboard';
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import WordleRow from './components/WordleRow';
 import Toaster from './components/Toaster';
 import Confetti from 'react-confetti';
@@ -75,10 +75,23 @@ export default function App(){
         },1500)
     },[app.isNotInWordList])
 
+    useEffect(() => {
+        setTimeout(() => {
+            setApp(prevApp => {return{...prevApp, showMainMenuToaster: false}})
+        },2500)
+    },[app.showMainMenuToaster])
+
+    // main menu buttons handler
     function onClickHandler(event){
-        newGame();
+        const buttonName = event.target.className.split(' ')[1].toString();
+        if(buttonName.toString() === 'disabled'){
+            setApp(prevApp => {return{...prevApp, showMainMenuToaster: true, mainMenuToasterText: 'coming soon'}})
+        }else{
+            newGame();
+        }
     }
 
+    // virtual keyboard handler
     function onKeyPressHandler(event){
 
         const userWord = rows[currentRow].reduce((res,item) => {return res + item});
@@ -93,9 +106,12 @@ export default function App(){
             //  on user press enter
             if(checkForEnterKey(key)){
                 
+                // check if guess have all five letters
                 if(currentCell < NUMBER_OF_LETTERS){
                     setApp(prevApp => {return{...prevApp, isNotEnoughLetters: true}})
                     return;
+                
+                // check if guess is found within the guess list
                 }else if(!checkForWord(userWord, wordList) && !checkForWord(userWord, guessList)){
                     setApp(prevApp => {return{...prevApp, isNotInWordList: true}})
                     return;
@@ -132,46 +148,55 @@ export default function App(){
         setKeyboard(setupKeyboard())
     }
     
-
     return(
         <main>
-            <h1 className='app-title'>Wordle</h1>
-            <h3 className='app-subtitle'>in react</h3>
+            <header>
+                <h1 className='app-title'>Wordle</h1>
+                <h3 className='app-subtitle'>in <span className='app-subtitle--primary'>react</span></h3>
+            </header>
             {!app.isGameStarted ? 
             <>
                 <div className="btn btn--daily" onClick={onClickHandler}>daily wordle</div>
                 <div className="btn btn--new" onClick={onClickHandler}>new wordle</div>
+                <div className="btn disabled btn--seven" onClick={onClickHandler}>new 7-letter wordle</div>
+                {app.showMainMenuToaster ? <Toaster value={app.mainMenuToasterText} /> : ''}
                 <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer>
             </>: 
             <>
                 <WordleRow
                     isGuessed = {currentRow > 0}
+                    currentRow = {currentRow}
                     value = {rows[0]}
                     target = {word}
                 />
                 <WordleRow
                     isGuessed = {currentRow > 1}
+                    currentRow = {currentRow}
                     value = {rows[1]}
                     target = {word}
                 />
                 {app.isEndGame ? app.isWon ? <Toaster value='You win!' /> :  <Toaster value={word} /> : app.isNotInWordList ? <Toaster value='not in wordlist' /> : app.isNotEnoughLetters ? <Toaster value='not enough letters' /> : ''}
                 <WordleRow
                     isGuessed = {currentRow > 2}
+                    currentRow = {currentRow}
                     value = {rows[2]}
                     target = {word}
                 />
                 <WordleRow
                     isGuessed = {currentRow > 3}
+                    currentRow = {currentRow}
                     value = {rows[3]}
                     target = {word}
                 />
                 <WordleRow
                     isGuessed = {currentRow > 4}
+                    currentRow = {currentRow}
                     value = {rows[4]}
                     target = {word}
                 />
                 <WordleRow
                     isGuessed = {currentRow > 5}
+                    currentRow = {currentRow}
                     value = {rows[5]}
                     target = {word}
                 />
@@ -184,9 +209,9 @@ export default function App(){
                     onclick  ={onKeyPressHandler} 
                 /> : app.isWon ? 
                 (<><Confetti />
-                <button className='btn--newGame' onClick={newGame}>Play New Wordle</button>
+                <button className='btn btn--newGame' onClick={newGame}>Play New Wordle</button>
                 <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></>) : 
-                <><button className='btn--newGame' onClick={newGame}>Play New Wordle</button>
+                <><button className='btn btn--newGame' onClick={newGame}>Play New Wordle</button>
                 <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></>}
             </>}
         </main>

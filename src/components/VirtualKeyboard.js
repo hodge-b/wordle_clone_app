@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {nanoid} from 'nanoid';
 import VirtualKey from './VirtualKey';
-import {checkForCellCorrectLetter, checkForCorrectLetterWrongCell, checkForWord} from '../utilities/Logic';
+import {checkForCellCorrectLetter, checkForCorrectLetterWrongCell, checkForWord, checkForTooManyGuessedOfLetter} from '../utilities/Logic';
 
 
 export default function VirtualKeyboard(props){
@@ -20,39 +20,42 @@ export default function VirtualKeyboard(props){
     for(let i=0; i<10; i++){
         keyboardRows01.push(
             <VirtualKey 
-                key          = {props.keyboard[0][i].id}
-                value        = {props.keyboard[0][i].value}
-                isRight      = {props.keyboard[0][i].isRight}
-                isWrongCell  = {props.keyboard[0][i].isWrongCell}
-                isGuessed    = {props.keyboard[0][i].isGuessed}
-                isWideButton = {props.keyboard[0][i].isWideButton}
-                onclick      = {props.onclick}
+                key                      = {props.keyboard[0][i].id}
+                value                    = {props.keyboard[0][i].value}
+                isRight                  = {props.keyboard[0][i].isRight}
+                isWrongCell              = {props.keyboard[0][i].isWrongCell}
+                isTooManyOfGuessedLetter = {props.keyboard[0][i].isTooManyOfGuessedLetter}
+                isGuessed                = {props.keyboard[0][i].isGuessed}
+                isWideButton             = {props.keyboard[0][i].isWideButton}
+                onclick                  = {props.onclick}
             />
         )
     }
     for(let i=0; i<9; i++){
         keyboardRows02.push(
             <VirtualKey 
-                key          = {props.keyboard[1][i].id}
-                value        = {props.keyboard[1][i].value}
-                isRight      = {props.keyboard[1][i].isRight}
-                isWrongCell  = {props.keyboard[1][i].isWrongCell}
-                isGuessed    = {props.keyboard[1][i].isGuessed}
-                isWideButton = {props.keyboard[1][i].isWideButton}
-                onclick      = {props.onclick}
+                key                      = {props.keyboard[1][i].id}
+                value                    = {props.keyboard[1][i].value}
+                isRight                  = {props.keyboard[1][i].isRight}
+                isWrongCell              = {props.keyboard[1][i].isWrongCell}
+                isTooManyOfGuessedLetter = {props.keyboard[1][i].isTooManyOfGuessedLetter}
+                isGuessed                = {props.keyboard[1][i].isGuessed}
+                isWideButton             = {props.keyboard[1][i].isWideButton}
+                onclick                  = {props.onclick}
             />
         )
     }
     for(let i=0; i<9; i++){
         keyboardRows03.push(
             <VirtualKey 
-                key          = {props.keyboard[2][i].id}
-                value        = {props.keyboard[2][i].value}
-                isRight      = {props.keyboard[2][i].isRight}
-                isWrongCell  = {props.keyboard[2][i].isWrongCell}
-                isGuessed    = {props.keyboard[2][i].isGuessed}
-                isWideButton = {props.keyboard[2][i].isWideButton}
-                onclick      = {props.onclick}
+                key                      = {props.keyboard[2][i].id}
+                value                    = {props.keyboard[2][i].value}
+                isRight                  = {props.keyboard[2][i].isRight}
+                isWrongCell              = {props.keyboard[2][i].isWrongCell}
+                isTooManyOfGuessedLetter = {props.keyboard[2][i].isTooManyOfGuessedLetter}
+                isGuessed                = {props.keyboard[2][i].isGuessed}
+                isWideButton             = {props.keyboard[2][i].isWideButton}
+                onclick                  = {props.onclick}
             />
         )
     }
@@ -89,7 +92,7 @@ export function updateKeyboard(prevKeyboard, rows, currentRow, word){
                             checkForCorrectLetterWrongCell(key.value, word[1], word.split('')) || 
                             checkForCorrectLetterWrongCell(key.value, word[2], word.split('')) || 
                             checkForCorrectLetterWrongCell(key.value, word[3], word.split('')) || 
-                            checkForCorrectLetterWrongCell(key.value, word[4], word.split(''))) ? true : false
+                            checkForCorrectLetterWrongCell(key.value, word[4], word.split(''))) ? true : false,
                 
                 }
             }
@@ -109,6 +112,7 @@ export function setupKeyboard(){
         value: 'q',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -116,6 +120,7 @@ export function setupKeyboard(){
         value: 'w',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -123,6 +128,7 @@ export function setupKeyboard(){
         value: 'e',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -130,6 +136,7 @@ export function setupKeyboard(){
         value: 'r',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -137,6 +144,7 @@ export function setupKeyboard(){
         value: 't',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -144,6 +152,7 @@ export function setupKeyboard(){
         value: 'y',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -151,6 +160,7 @@ export function setupKeyboard(){
         value: 'u',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -158,6 +168,7 @@ export function setupKeyboard(){
         value: 'i',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -165,6 +176,7 @@ export function setupKeyboard(){
         value: 'o',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     },{
@@ -172,6 +184,7 @@ export function setupKeyboard(){
         value: 'p',
         isRight: false,
         isWrongCell: false,
+        isTooManyOfGuessedLetter: false,
         isGuessed: false,
         isWideButton: false,
     }],[
@@ -180,6 +193,7 @@ export function setupKeyboard(){
             value: 'a',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -187,6 +201,7 @@ export function setupKeyboard(){
             value: 's',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -194,6 +209,7 @@ export function setupKeyboard(){
             value: 'd',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -201,6 +217,7 @@ export function setupKeyboard(){
             value: 'f',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -208,6 +225,7 @@ export function setupKeyboard(){
             value: 'g',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -215,6 +233,7 @@ export function setupKeyboard(){
             value: 'h',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -222,6 +241,7 @@ export function setupKeyboard(){
             value: 'j',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -229,6 +249,7 @@ export function setupKeyboard(){
             value: 'k',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         },{
@@ -236,6 +257,7 @@ export function setupKeyboard(){
             value: 'l',
             isRight: false,
             isWrongCell: false,
+            isTooManyOfGuessedLetter: false,
             isGuessed: false,
             isWideButton: false,
         }],[
@@ -244,6 +266,7 @@ export function setupKeyboard(){
                 value: 'enter',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: true,
             },{
@@ -251,6 +274,7 @@ export function setupKeyboard(){
                 value: 'z',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -258,6 +282,7 @@ export function setupKeyboard(){
                 value: 'x',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -265,6 +290,7 @@ export function setupKeyboard(){
                 value: 'c',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -272,6 +298,7 @@ export function setupKeyboard(){
                 value: 'v',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -279,6 +306,7 @@ export function setupKeyboard(){
                 value: 'b',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -286,6 +314,7 @@ export function setupKeyboard(){
                 value: 'n',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -293,6 +322,7 @@ export function setupKeyboard(){
                 value: 'm',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: false,
             },{
@@ -300,6 +330,7 @@ export function setupKeyboard(){
                 value: '<-',
                 isRight: false,
                 isWrongCell: false,
+                isTooManyOfGuessedLetter: false,
                 isGuessed: false,
                 isWideButton: true,
             },]]

@@ -8,7 +8,12 @@ export function setupGame(){
         isEndGame: false,
         isWon: false,
         isNotEnoughLetters: false,
-        isNotInWordList: false
+        isNotInWordList: false,
+        isDailyDone: false,
+        isFiveLetterWordleAvailable: true,
+        isSevenLetterWordleAvailable: false,
+        showMainMenuToaster: false,
+        mainMenuToasterText: '',
     }
 }
 

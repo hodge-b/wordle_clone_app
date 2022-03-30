@@ -247,7 +247,7 @@ function wordList(){
             "torso","match","mercy","tepid","sleek","riser","twixt","peace","flush","catty",
             "login","eject","roger","rival","untie","refit","aorta","adult","judge","rower",
             "artsy","rural","shave","bobby","eclat","fella","gaily","harry","hasty","hydro",
-            "liege","octal","ombre","payer","sooth","unset","unlit","vomit","fanny"]
+            "liege","octal","ombre","payer","sooth","unset","unlit","vomit","fanny","atari"]
             
             
 }
@@ -1222,5 +1222,5 @@ function guessList(){
     "zocco","zoeae","zoeal","zoeas","zoism","zoist","zombi","zonae","zonda","zoned","zoner",
     "zones","zonks","zooea","zooey","zooid","zooks","zooms","zoons","zooty","zoppa","zoppo",
     "zoril","zoris","zorro","zouks","zowee","zowie","zulus","zupan","zupas","zuppa","zurfs",
-    "zuzim","zygal","zygon","zymes","zymic"]
+    "zuzim","zygal","zygon","zymes","zymic","atari"]
 }
