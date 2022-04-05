@@ -1,25 +1,28 @@
 import {checkForClearKey, checkForEnterKey, checkForTargetWord, checkForWord} from './utilities/Logic';
-import {setupRows, setupGame, copyArray} from './utilities/Utilities';
+import {setupRows, setupGame, copyArray, setupWinningText, setupStats} from './utilities/Utilities';
 import {setupGuessList, setupWordList, setupWord} from './utilities/WordList';
 import VirtualKeyboard, {setupKeyboard, updateKeyboard} from './components/VirtualKeyboard';
+import {readStateFromDevice, saveStateToDevice, resetStatesOnDevice} from './utilities/LocalStorage';
 import {useState, useEffect} from 'react';
 import WordleRow from './components/WordleRow';
+import StatsModal from './components/StatsModal';
 import Toaster from './components/Toaster';
 import Confetti from 'react-confetti';
 import './style.css';
 
 
 // constants
-const NUMBER_OF_TRIES = 6;
-const NUMBER_OF_LETTERS = 5;
+const WORDLE_NUMBER_OF_TRIES      = 6;
+const WORDLE_NUMBER_OF_LETTERS    = 5;
 
 
 export default function App(){
 
-
+    const [stats, setStats] = useState(setupStats());
     const [usedKeys, setUsedKeys] = useState([]);
+    const [tabIndex, setTabIndex] = useState(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS);
     const [app, setApp] = useState(setupGame());
-    const [rows, setRows] = useState(setupRows(NUMBER_OF_TRIES, NUMBER_OF_LETTERS));
+    const [rows, setRows] = useState(setupRows(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS));
     const [currentRow, setCurrentRow] = useState(0);
     const [currentCell, setCurrentCell] = useState(0);
     const [word, setWord] = useState(setupWord());
@@ -34,17 +37,63 @@ export default function App(){
         let userWord = '';
         
         if(currentRow > 0) userWord = rows[currentRow-1].reduce((res,item) => {return res + item});
-
+        
         // game ends
-        if(currentRow >= NUMBER_OF_TRIES){
+        if(currentRow >= WORDLE_NUMBER_OF_TRIES){
+
+            // guessed correctly on try 6
             if(checkForTargetWord(userWord, word)){
-                setApp(prevApp=> {return{...prevApp, isWon: true, isEndGame: true}})
+                setApp(prevApp=> {return{...prevApp, isWon: true, isEndGame: true, showConfetti: true, showEndGameToaster: true}})
+                if(app.isDailyMode){
+                    setStats(prevStat => {return{...prevStat,dailyModeTotalGamesPlayed: stats.dailyModeTotalGamesPlayed + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeTotalGamesWon: stats.dailyModeTotalGamesWon + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeWinPercent: Math.floor((stats.dailyModeTotalGamesWon + 1) / (stats.dailyModeTotalGamesPlayed + 1) * 100)}})
+                    setStats(prevStat => {return{...prevStat, dailyModeCurrentStreak: stats.dailyModeCurrentStreak + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeHighestStreak: stats.dailyModeHighestStreak <= stats.dailyModeCurrentStreak ? stats.dailyModeHighestStreak + 1 : stats.dailyModeHighestStreak}})
+                }else{
+                    setStats(prevStat => {return{...prevStat,freeModeTotalGamesPlayed: stats.freeModeTotalGamesPlayed + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeTotalGamesWon: stats.freeModeTotalGamesWon + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeWinPercent: Math.floor((stats.freeModeTotalGamesWon + 1) / (stats.freeModeTotalGamesPlayed + 1) * 100)}})
+                    setStats(prevStat => {return{...prevStat, freeModeCurrentStreak: stats.freeModeCurrentStreak + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeHighestStreak: stats.freeModeHighestStreak <= stats.freeModeCurrentStreak ? stats.freeModeHighestStreak + 1 : stats.freeModeHighestStreak}})
+                }
+                
+                
+            // user did not win and used all 6 tries
             }else{
-                setApp(prevApp => {return{...prevApp, isEndGame: true}})
+                setApp(prevApp => {return{...prevApp, isEndGame: true, showEndGameToaster: true}})
+                if(app.isDailyMode){
+                    setStats(prevStat => {return{...prevStat,dailyModeTotalGamesPlayed: stats.dailyModeTotalGamesPlayed + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeWinPercent: Math.floor(stats.dailyModeTotalGamesWon / (stats.dailyModeTotalGamesPlayed + 1)* 100)}})
+                    setStats(prevStat => {return{...prevStat, dailyModeCurrentStreak: 0}})
+                }else{
+                    setStats(prevStat => {return{...prevStat,freeModeTotalGamesPlayed: stats.freeModeTotalGamesPlayed + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeWinPercent: Math.floor(stats.freeModeTotalGamesWon / (stats.freeModeTotalGamesPlayed + 1)* 100)}})
+                    setStats(prevStat => {return{...prevStat, freeModeCurrentStreak: 0}})
+                }
             }
+
         }else{
+
+            // guessed correct word before total tries
             if(checkForTargetWord(userWord, word)){
-                setApp(prevApp=> {return{...prevApp, isWon: true, isEndGame: true}})
+                setApp(prevApp=> {return{...prevApp, isWon: true, isEndGame: true, showConfetti: true, showEndGameToaster: true}})
+                if(app.isDailyMode){
+                    setStats(prevStat => {return{...prevStat,dailyModeTotalGamesPlayed: stats.dailyModeTotalGamesPlayed + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeTotalGamesWon: stats.dailyModeTotalGamesWon + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeWinPercent: Math.floor((stats.dailyModeTotalGamesWon + 1) / (stats.dailyModeTotalGamesPlayed + 1)* 100)}})
+                    setStats(prevStat => {return{...prevStat, dailyModeCurrentStreak: stats.dailyModeCurrentStreak + 1}})
+                    setStats(prevStat => {return{...prevStat, dailyModeHighestStreak: stats.dailyModeHighestStreak <= stats.dailyModeCurrentStreak ? stats.dailyModeHighestStreak + 1 : stats.dailyModeHighestStreak}})
+                }else{
+                    setStats(prevStat => {return{...prevStat,freeModeTotalGamesPlayed: stats.freeModeTotalGamesPlayed + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeTotalGamesWon: stats.freeModeTotalGamesWon + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeWinPercent: Math.floor((stats.freeModeTotalGamesWon + 1) / (stats.freeModeTotalGamesPlayed + 1) * 100)}})
+                    setStats(prevStat => {return{...prevStat, freeModeCurrentStreak: stats.freeModeCurrentStreak + 1}})
+                    setStats(prevStat => {return{...prevStat, freeModeHighestStreak: stats.freeModeHighestStreak <= stats.freeModeCurrentStreak ? stats.freeModeHighestStreak + 1 : stats.freeModeHighestStreak}})
+                }
+                
+
+            // game is not finished
             }else{
                 if(currentRow === 1){
                     setKeyboard(prevKeyboard => {return updateKeyboard(prevKeyboard, rows, currentRow, word)});
@@ -62,6 +111,26 @@ export default function App(){
         
     },[currentRow]);
 
+    // timers for winning conditions met
+    useEffect(() => {
+        setTimeout(() => {
+            setApp(prevApp => {return{...prevApp, showConfetti: false}})
+        },6000)
+    },[app.showConfetti])
+
+    useEffect(() => {
+        setTimeout(() => {
+            setApp(prevApp => {return{...prevApp, showEndGameToaster: false}})
+        },5000)
+    },[app.showEndGameToaster])
+
+    useEffect(() => {
+        if(app.showEndGameToaster) return;
+        if(!app.showEndGameToaster && app.isEndGame){
+            setApp(prevApp => {return{...prevApp, showStatsModal: true}})
+        }
+    },[app.showEndGameToaster])
+
     // for toaster timeouts
     useEffect(() => {
         setTimeout(()=> {
@@ -75,19 +144,104 @@ export default function App(){
         },1500)
     },[app.isNotInWordList])
 
+
     useEffect(() => {
         setTimeout(() => {
             setApp(prevApp => {return{...prevApp, showMainMenuToaster: false}})
         },2500)
     },[app.showMainMenuToaster])
 
+
+    // read states to device
+    useEffect(() => {
+        setStats(prevStats => {return{
+            ...prevStats,
+            // daily mode
+            dailyModeTotalGamesPlayed: readStateFromDevice('dailyModeTotalGamesPlayed') !== '' ? readStateFromDevice('dailyModeTotalGamesPlayed') : 0,
+            dailyModeTotalGamesWon: readStateFromDevice('dailyModeTotalGamesWon') !== '' ? readStateFromDevice('dailyModeTotalGamesWon') : 0,
+            dailyModeWinPercent: readStateFromDevice('dailyModeWinPercent') !== '' ? readStateFromDevice('dailyModeWinPercent') : 0,
+            dailyModeCurrentStreak: readStateFromDevice('dailyModeCurrentStreak') !== '' ? readStateFromDevice('dailyModeCurrentStreak') : 0,
+            dailyModeHighestStreak: readStateFromDevice('dailyModeHighestStreak') !== '' ? readStateFromDevice('dailyModeHighestStreak') : 0,
+
+            // free mode
+            freeModeTotalGamesPlayed: readStateFromDevice('freeModeTotalGamesPlayed') !== '' ? readStateFromDevice('freeModeTotalGamesPlayed') : 0,
+            freeModeTotalGamesWon: readStateFromDevice('freeModeTotalGamesWon') !== '' ? readStateFromDevice('freeModeTotalGamesWon') : 0,
+            freeModeWinPercent: readStateFromDevice('freeModeWinPercent') !== '' ? readStateFromDevice('freeModeWinPercent') : 0,
+            freeModeCurrentStreak: readStateFromDevice('freeModeCurrentStreak') !== '' ? readStateFromDevice('freeModeCurrentStreak') : 0,
+            freeModeHighestStreak: readStateFromDevice('freeModeHighestStreak') !== '' ? readStateFromDevice('freeModeHighestStreak') : 0
+        }})
+    },[app.showStatsModal])
+
+    // save states to device
+    useEffect(() => {
+        // daily mode
+        saveStateToDevice('dailyModeTotalGamesPlayed', stats.dailyModeTotalGamesPlayed);
+        saveStateToDevice('dailyModeTotalGamesWon', stats.dailyModeTotalGamesWon);
+        saveStateToDevice('dailyModeWinPercent', stats.dailyModeWinPercent);
+        saveStateToDevice('dailyModeCurrentStreak', stats.dailyModeCurrentStreak);
+        saveStateToDevice('dailyModeHighestStreak', stats.dailyModeHighestStreak);
+
+        // free mode
+        saveStateToDevice('freeModeTotalGamesPlayed', stats.freeModeTotalGamesPlayed);
+        saveStateToDevice('freeModeTotalGamesWon', stats.freeModeTotalGamesWon);
+        saveStateToDevice('freeModeWinPercent', stats.freeModeWinPercent);
+        saveStateToDevice('freeModeCurrentStreak', stats.freeModeCurrentStreak);
+        saveStateToDevice('freeModeHighestStreak', stats.freeModeHighestStreak);
+    },[stats])
+
+
     // main menu buttons handler
     function onClickHandler(event){
         const buttonName = event.target.className.split(' ')[1].toString();
-        if(buttonName.toString() === 'disabled'){
-            setApp(prevApp => {return{...prevApp, showMainMenuToaster: true, mainMenuToasterText: 'coming soon'}})
-        }else{
-            newGame();
+        
+        switch(buttonName){
+            case 'btn--stats':
+                setApp(prevApp => {return{...prevApp, showStatsModal: true}});
+                break;
+            case 'btn--back':
+                setApp(prevApp => {return{...prevApp, showStatsModal: false, isGameStarted: false}});
+                break;
+            case 'btn--daily-stats':
+                setApp(prevApp => {return{...prevApp, showStatsDaily: true}})
+                break;
+            case 'btn--free-stats':
+                setApp(prevApp => {return{...prevApp, showStatsDaily: false}})
+                break;
+            case 'btn--temp-delete':
+                resetStatesOnDevice();
+                setStats(prevStats => {return{
+                    ...prevStats,
+                    // daily mode
+                    dailyModeTotalGamesPlayed: 0,
+                    dailyModeTotalGamesWon: 0,
+                    dailyModeWinPercent: 0,
+                    dailyModeCurrentStreak: 0,
+                    dailyModeHighestStreak: 0,
+
+                    // free mode
+                    freeModeTotalGamesPlayed: 0,
+                    freeModeTotalGamesWon: 0,
+                    freeModeWinPercent: 0,
+                    freeModeCurrentStreak: 0,
+                    freeModeHighestStreak: 0
+                }})
+                break;
+            case 'btn--daily':
+                //setApp(setupGame());
+                //setApp(prevApp => {return{...prevApp, isDailyMode: true, isFreeMode: false, showStatsDaily: true}})
+                //newGame();
+                setApp(prevApp => {return{...prevApp, showMainMenuToaster: true, mainMenuToasterText: 'coming soon'}})
+                break;
+            case 'btn--free':
+                setApp(setupGame());
+                setApp(prevApp => {return{...prevApp, isDailyMode: false, isFreeMode: true, showStatsDaily: false}})
+                newGame();
+                break;
+            case 'btn--menu':
+                setApp(prevApp => {return{...prevApp, showStatsModal: false, isGameStarted: false}});
+                break;
+            default:
+                break;
         }
     }
 
@@ -105,13 +259,13 @@ export default function App(){
 
             //  on user press enter
             if(checkForEnterKey(key)){
-                
                 // check if guess have all five letters
-                if(currentCell < NUMBER_OF_LETTERS){
+                if(currentCell < WORDLE_NUMBER_OF_LETTERS){
                     setApp(prevApp => {return{...prevApp, isNotEnoughLetters: true}})
                     return;
                 
                 // check if guess is found within the guess list
+                
                 }else if(!checkForWord(userWord, wordList) && !checkForWord(userWord, guessList)){
                     setApp(prevApp => {return{...prevApp, isNotInWordList: true}})
                     return;
@@ -123,14 +277,14 @@ export default function App(){
 
             // on user clear
             }else if(checkForClearKey(key)){
-                updatedRows[currentRow][currentCell-1] = '';
+                updatedRows[currentRow][currentCell - 1] = '';
                 currentCell > 0 ? setCurrentCell(currentCell - 1) : setCurrentCell(0);
                 setRows(updatedRows);
             
             // add user key
             }else{
-                updatedRows[currentRow][currentCell] = key;
-                currentCell < NUMBER_OF_LETTERS ? setCurrentCell(currentCell + 1) : setCurrentCell(NUMBER_OF_LETTERS) ;
+                if(currentCell < 5) updatedRows[currentRow][currentCell] = key;
+                currentCell < WORDLE_NUMBER_OF_LETTERS ? setCurrentCell(currentCell + 1) : setCurrentCell(WORDLE_NUMBER_OF_LETTERS) ;
                 setRows(updatedRows);
             }
         }else{
@@ -138,16 +292,18 @@ export default function App(){
         }
     }
 
+    // this function sets up the game and resets all state values to default
     function newGame(){
-        setApp(setupGame());
         setApp(prevApp => {return {...prevApp, isGameStarted: true}})
-        setRows(setupRows(NUMBER_OF_TRIES, NUMBER_OF_LETTERS));
+        setApp(prevApp => {return {...prevApp, showStatsModal: false}})
+        setRows(setupRows(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS));
         setCurrentRow(0);
         setCurrentCell(0);
         setWord(setupWord());
         setKeyboard(setupKeyboard())
     }
     
+
     return(
         <main>
             <header>
@@ -156,51 +312,87 @@ export default function App(){
             </header>
             {!app.isGameStarted ? 
             <>
-                <div className="btn btn--daily" onClick={onClickHandler}>daily wordle</div>
-                <div className="btn btn--new" onClick={onClickHandler}>new wordle</div>
-                <div className="btn disabled btn--seven" onClick={onClickHandler}>new 7-letter wordle</div>
+                <div className="btn btn--daily disabled" onClick={onClickHandler}>daily wordle</div>
+                <div className="btn btn--free" onClick={onClickHandler}>free wordle</div>
+                <div className="btn btn--stats" onClick={onClickHandler}>stats</div>
                 {app.showMainMenuToaster ? <Toaster value={app.mainMenuToasterText} /> : ''}
+                {app.showStatsModal ? 
+                    <StatsModal 
+                        isGameStarted          = {app.isGameStarted}
+                        showStatsDaily         = {app.showStatsDaily}
+                        dailyModeGamesPlayed   = {stats.dailyModeTotalGamesPlayed}
+                        dailyModeGamesWon      = {stats.dailyModeTotalGamesWon}
+                        dailyModeWinPercentage = {stats.dailyModeWinPercent}
+                        dailyModeCurrentStreak = {stats.dailyModeCurrentStreak}
+                        dailyModeMaxStreak     = {stats.dailyModeHighestStreak}
+                        freeModeGamesPlayed    = {stats.freeModeTotalGamesPlayed}
+                        freeModeGamesWon       = {stats.freeModeTotalGamesWon}
+                        freeModeWinPercentage  = {stats.freeModeWinPercent}
+                        freeModeCurrentStreak  = {stats.freeModeCurrentStreak}
+                        freeModeMaxStreak      = {stats.freeModeHighestStreak}
+                        onclick                = {onClickHandler}
+                    /> : ''}
                 <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer>
             </>: 
             <>
-                <WordleRow
-                    isGuessed = {currentRow > 0}
-                    currentRow = {currentRow}
-                    value = {rows[0]}
-                    target = {word}
-                />
-                <WordleRow
-                    isGuessed = {currentRow > 1}
-                    currentRow = {currentRow}
-                    value = {rows[1]}
-                    target = {word}
-                />
-                {app.isEndGame ? app.isWon ? <Toaster value='You win!' /> :  <Toaster value={word} /> : app.isNotInWordList ? <Toaster value='not in wordlist' /> : app.isNotEnoughLetters ? <Toaster value='not enough letters' /> : ''}
-                <WordleRow
-                    isGuessed = {currentRow > 2}
-                    currentRow = {currentRow}
-                    value = {rows[2]}
-                    target = {word}
-                />
-                <WordleRow
-                    isGuessed = {currentRow > 3}
-                    currentRow = {currentRow}
-                    value = {rows[3]}
-                    target = {word}
-                />
-                <WordleRow
-                    isGuessed = {currentRow > 4}
-                    currentRow = {currentRow}
-                    value = {rows[4]}
-                    target = {word}
-                />
-                <WordleRow
-                    isGuessed = {currentRow > 5}
-                    currentRow = {currentRow}
-                    value = {rows[5]}
-                    target = {word}
-                />
-            
+                <>
+                    <WordleRow
+                        isSeptordle = {app.isGameSeptordle}
+                        isGuessed = {currentRow > 0}
+                        currentRow = {currentRow}
+                        currentCell= {currentCell}
+                        tabIndex = {tabIndex}
+                        value = {rows[0]}
+                        target = {word}
+                    />
+                    <WordleRow
+                        isSeptordle = {app.isGameSeptordle}
+                        isGuessed = {currentRow > 1}
+                        currentRow = {currentRow}
+                        currentCell= {currentCell}
+                        tabIndex = {tabIndex}
+                        value = {rows[1]}
+                        target = {word}
+                    />
+                    {app.isNotInWordList ? <Toaster value='not in wordlist' /> : app.isNotEnoughLetters ? <Toaster value='not enough letters' /> : ''}
+                    <WordleRow
+                        isSeptordle = {app.isGameSeptordle}
+                        isGuessed = {currentRow > 2}
+                        currentRow = {currentRow}
+                        currentCell= {currentCell}
+                        tabIndex = {tabIndex}
+                        value = {rows[2]}
+                        target = {word}
+                    />
+                    <WordleRow
+                        isSeptordle = {app.isGameSeptordle}
+                        isGuessed = {currentRow > 3}
+                        currentRow = {currentRow}
+                        currentCell= {currentCell}
+                        tabIndex = {tabIndex}
+                        value = {rows[3]}
+                        target = {word}
+                    />
+                    <WordleRow
+                        isSeptordle = {app.isGameSeptordle}
+                        isGuessed = {currentRow > 4}
+                        currentRow = {currentRow}
+                        currentCell= {currentCell}
+                        tabIndex = {tabIndex}
+                        value = {rows[4]}
+                        target = {word}
+                    />
+                    <WordleRow
+                        isSeptordle = {app.isGameSeptordle}
+                        isGuessed = {currentRow > 5}
+                        currentRow = {currentRow}
+                        currentCell= {currentCell}
+                        tabIndex = {tabIndex}
+                        value = {rows[5]}
+                        target = {word}
+                    /> 
+                </> 
+
                 {!app.isEndGame ? <VirtualKeyboard  
                     keyboard = {keyboard}
                     target   = {word}
@@ -208,11 +400,45 @@ export default function App(){
                     currentRow = {currentRow}
                     onclick  ={onKeyPressHandler} 
                 /> : app.isWon ? 
-                (<><Confetti />
-                <button className='btn btn--newGame' onClick={newGame}>Play New Wordle</button>
-                <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></>) : 
-                <><button className='btn btn--newGame' onClick={newGame}>Play New Wordle</button>
-                <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></>}
+                <> {app.showConfetti ? <Confetti /> : ''}
+                    {app.showEndGameToaster ? app.isEndGame ? app.isWon ? <Toaster value={setupWinningText()} /> :  <Toaster value={word} /> : ''  : ''}
+                    {app.showStatsModal ? 
+                        <StatsModal 
+                            isGameStarted          = {app.isGameStarted}
+                            showStatsDaily         = {app.showStatsDaily}
+                            dailyModeGamesPlayed   = {stats.dailyModeTotalGamesPlayed}
+                            dailyModeGamesWon      = {stats.dailyModeTotalGamesWon}
+                            dailyModeWinPercentage = {stats.dailyModeWinPercent}
+                            dailyModeCurrentStreak = {stats.dailyModeCurrentStreak}
+                            dailyModeMaxStreak     = {stats.dailyModeHighestStreak}
+                            freeModeGamesPlayed    = {stats.freeModeTotalGamesPlayed}
+                            freeModeGamesWon       = {stats.freeModeTotalGamesWon}
+                            freeModeWinPercentage  = {stats.freeModeWinPercent}
+                            freeModeCurrentStreak  = {stats.freeModeCurrentStreak}
+                            freeModeMaxStreak      = {stats.freeModeHighestStreak}
+                            onclick                = {onClickHandler}
+                        /> : ''}
+                    <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer></> : 
+                <>
+                {app.showEndGameToaster ? app.isEndGame ? <Toaster value={word} /> : ''  : ''}
+                    {app.showStatsModal ? 
+                        <StatsModal 
+                            isGameStarted          = {app.isGameStarted}
+                            showStatsDaily         = {app.showStatsDaily}
+                            dailyModeGamesPlayed   = {stats.dailyModeTotalGamesPlayed}
+                            dailyModeGamesWon      = {stats.dailyModeTotalGamesWon}
+                            dailyModeWinPercentage = {stats.dailyModeWinPercent}
+                            dailyModeCurrentStreak = {stats.dailyModeCurrentStreak}
+                            dailyModeMaxStreak     = {stats.dailyModeHighestStreak}
+                            freeModeGamesPlayed    = {stats.freeModeTotalGamesPlayed}
+                            freeModeGamesWon       = {stats.freeModeTotalGamesWon}
+                            freeModeWinPercentage  = {stats.freeModeWinPercent}
+                            freeModeCurrentStreak  = {stats.freeModeCurrentStreak}
+                            freeModeMaxStreak      = {stats.freeModeHighestStreak}
+                            onclick                = {onClickHandler}
+                        /> : ''}
+                    <footer><small>Copyright © 2022 bradley hodge. All Rights Reserved.</small></footer>
+                </>}
             </>}
         </main>
     )

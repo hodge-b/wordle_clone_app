@@ -27,29 +27,33 @@ export function checkForCorrectLetterWrongCell(letter, targetLetter, word){
 export function checkForTooManyGuessedOfLetter(word, targetWord, cellIndex){
     
     let guessedLetter = word[cellIndex];
-    let guessedLetterCount = 0;
-    let targetLetterCount = 0;
+    const targetLetterIndex = [];
+    const guessedLetterIndex = [];
 
-    targetWord.forEach(item => {
-        if(item === guessedLetter){
-            targetLetterCount++;
-        }
-    })
-    word.forEach(guessItem => {
-        if(guessItem === guessedLetter){
-            guessedLetterCount++;
-        }
+
+    targetWord.forEach((item, index) => {
+        if(item === guessedLetter) targetLetterIndex.push(index);
     })
 
-    if(guessedLetterCount > targetLetterCount){
-        if(cellIndex > word.indexOf(guessedLetter)){
-            return true;
-        }else{
-            return false;
-        }
+    word.forEach((guessItem, index) => {
+        if(guessItem === guessedLetter) guessedLetterIndex.push(index);
+    })
+
+
+    if(guessedLetterIndex.length > targetLetterIndex.length){
         
+        for(let i=targetLetterIndex.length; i<guessedLetterIndex.length; i++){
+            if(guessedLetterIndex[i] === cellIndex){
+                return true;
+            }else{
+                if(word[targetLetterIndex] !== targetWord[targetLetterIndex]){
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+        }
     }else{
         return false;
     }
-
 }

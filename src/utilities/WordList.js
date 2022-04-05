@@ -1222,5 +1222,5 @@ function guessList(){
     "zocco","zoeae","zoeal","zoeas","zoism","zoist","zombi","zonae","zonda","zoned","zoner",
     "zones","zonks","zooea","zooey","zooid","zooks","zooms","zoons","zooty","zoppa","zoppo",
     "zoril","zoris","zorro","zouks","zowee","zowie","zulus","zupan","zupas","zuppa","zurfs",
-    "zuzim","zygal","zygon","zymes","zymic","atari"]
+    "zuzim","zygal","zygon","zymes","zymic","atari","tiner"]
 }
