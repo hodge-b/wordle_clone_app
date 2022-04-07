@@ -1,6 +1,6 @@
 import {checkForClearKey, checkForEnterKey, checkForTargetWord, checkForWord} from './utilities/Logic';
 import {setupRows, setupGame, copyArray, setupWinningText, setupStats} from './utilities/Utilities';
-import {setupGuessList, setupWordList, setupWord} from './utilities/WordList';
+import {setupGuessList, setupWordList, setupWord, setupDailyWord} from './utilities/WordList';
 import VirtualKeyboard, {setupKeyboard, updateKeyboard} from './components/VirtualKeyboard';
 import {readStateFromDevice, saveStateToDevice, resetStatesOnDevice} from './utilities/LocalStorage';
 import {useState, useEffect} from 'react';
@@ -20,12 +20,12 @@ export default function App(){
 
     const [stats, setStats] = useState(setupStats());
     const [usedKeys, setUsedKeys] = useState([]);
-    const [tabIndex, setTabIndex] = useState(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS);
+    const [tabIndex] = useState(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS);
     const [app, setApp] = useState(setupGame());
     const [rows, setRows] = useState(setupRows(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS));
     const [currentRow, setCurrentRow] = useState(0);
     const [currentCell, setCurrentCell] = useState(0);
-    const [word, setWord] = useState(setupWord());
+    const [word, setWord] = useState({});
     const [wordList] = useState(setupWordList());
     const [guessList] = useState(setupGuessList());
     const [keyboard, setKeyboard] = useState(setupKeyboard());
@@ -33,17 +33,19 @@ export default function App(){
 
     // check for winning conditions
     useEffect(() => {
-
+        
         let userWord = '';
         
         if(currentRow > 0) userWord = rows[currentRow-1].reduce((res,item) => {return res + item});
         
+
         // game ends
         if(currentRow >= WORDLE_NUMBER_OF_TRIES){
 
             // guessed correctly on try 6
             if(checkForTargetWord(userWord, word)){
                 setApp(prevApp=> {return{...prevApp, isWon: true, isEndGame: true, showConfetti: true, showEndGameToaster: true}})
+                if(app.isDailyMode) setStats(prevStats => {return{...prevStats, previousDailyWord: word}});
                 if(app.isDailyMode){
                     setStats(prevStat => {return{...prevStat,dailyModeTotalGamesPlayed: stats.dailyModeTotalGamesPlayed + 1}})
                     setStats(prevStat => {return{...prevStat, dailyModeTotalGamesWon: stats.dailyModeTotalGamesWon + 1}})
@@ -62,6 +64,7 @@ export default function App(){
             // user did not win and used all 6 tries
             }else{
                 setApp(prevApp => {return{...prevApp, isEndGame: true, showEndGameToaster: true}})
+                if(app.isDailyMode) setStats(prevStats => {return{...prevStats, previousDailyWord: word}});
                 if(app.isDailyMode){
                     setStats(prevStat => {return{...prevStat,dailyModeTotalGamesPlayed: stats.dailyModeTotalGamesPlayed + 1}})
                     setStats(prevStat => {return{...prevStat, dailyModeWinPercent: Math.floor(stats.dailyModeTotalGamesWon / (stats.dailyModeTotalGamesPlayed + 1)* 100)}})
@@ -78,6 +81,7 @@ export default function App(){
             // guessed correct word before total tries
             if(checkForTargetWord(userWord, word)){
                 setApp(prevApp=> {return{...prevApp, isWon: true, isEndGame: true, showConfetti: true, showEndGameToaster: true}})
+                if(app.isDailyMode) setStats(prevStats => {return{...prevStats, previousDailyWord: word}});
                 if(app.isDailyMode){
                     setStats(prevStat => {return{...prevStat,dailyModeTotalGamesPlayed: stats.dailyModeTotalGamesPlayed + 1}})
                     setStats(prevStat => {return{...prevStat, dailyModeTotalGamesWon: stats.dailyModeTotalGamesWon + 1}})
@@ -111,19 +115,24 @@ export default function App(){
         
     },[currentRow]);
 
-    // timers for winning conditions met
+
+    // timer for displaying confetti on winning condition
     useEffect(() => {
         setTimeout(() => {
             setApp(prevApp => {return{...prevApp, showConfetti: false}})
         },6000)
     },[app.showConfetti])
 
+
+    // timer for displaying end game toaster
     useEffect(() => {
         setTimeout(() => {
             setApp(prevApp => {return{...prevApp, showEndGameToaster: false}})
         },5000)
     },[app.showEndGameToaster])
 
+
+    // effect used to determine when to display end game stats
     useEffect(() => {
         if(app.showEndGameToaster) return;
         if(!app.showEndGameToaster && app.isEndGame){
@@ -131,13 +140,16 @@ export default function App(){
         }
     },[app.showEndGameToaster])
 
-    // for toaster timeouts
+
+    // timer used to display toaster when user did not use enough letters
     useEffect(() => {
         setTimeout(()=> {
             setApp(prevApp => {return{...prevApp, isNotEnoughLetters: false}})
         },1500)
     },[app.isNotEnoughLetters])
 
+
+    // timer used to display toaster when user did not use a word from the word list
     useEffect(() => {
         setTimeout(()=> {
             setApp(prevApp => {return{...prevApp, isNotInWordList: false}})
@@ -145,11 +157,16 @@ export default function App(){
     },[app.isNotInWordList])
 
 
+    // timer used to display toaster on main menu
     useEffect(() => {
         setTimeout(() => {
             setApp(prevApp => {return{...prevApp, showMainMenuToaster: false}})
         },2500)
     },[app.showMainMenuToaster])
+
+    useEffect(() => {
+        if(app.isGameStarted) newGame();
+    },[app.isDailyMode])
 
 
     // read states to device
@@ -168,7 +185,11 @@ export default function App(){
             freeModeTotalGamesWon: readStateFromDevice('freeModeTotalGamesWon') !== '' ? readStateFromDevice('freeModeTotalGamesWon') : 0,
             freeModeWinPercent: readStateFromDevice('freeModeWinPercent') !== '' ? readStateFromDevice('freeModeWinPercent') : 0,
             freeModeCurrentStreak: readStateFromDevice('freeModeCurrentStreak') !== '' ? readStateFromDevice('freeModeCurrentStreak') : 0,
-            freeModeHighestStreak: readStateFromDevice('freeModeHighestStreak') !== '' ? readStateFromDevice('freeModeHighestStreak') : 0
+            freeModeHighestStreak: readStateFromDevice('freeModeHighestStreak') !== '' ? readStateFromDevice('freeModeHighestStreak') : 0,
+            previousDailyWord: readStateFromDevice('previousDailyWord') !== '' ? readStateFromDevice('previousDailyWord') : 'wordl',
+            previousDailyDone: readStateFromDevice('previousDailyDone')
+            // check for daily wordle completion
+            
         }})
     },[app.showStatsModal])
 
@@ -187,6 +208,10 @@ export default function App(){
         saveStateToDevice('freeModeWinPercent', stats.freeModeWinPercent);
         saveStateToDevice('freeModeCurrentStreak', stats.freeModeCurrentStreak);
         saveStateToDevice('freeModeHighestStreak', stats.freeModeHighestStreak);
+
+        // save previous daily wordle word
+        saveStateToDevice('previousDailyWord', stats.previousDailyWord);
+        saveStateToDevice('previousDailyDone', stats.previousDailyDone);
     },[stats])
 
 
@@ -227,14 +252,17 @@ export default function App(){
                 }})
                 break;
             case 'btn--daily':
-                //setApp(setupGame());
-                //setApp(prevApp => {return{...prevApp, isDailyMode: true, isFreeMode: false, showStatsDaily: true}})
-                //newGame();
-                setApp(prevApp => {return{...prevApp, showMainMenuToaster: true, mainMenuToasterText: 'coming soon'}})
+                if(stats.previousDailyWord === setupDailyWord()){
+                    setApp(prevApp => {return{...prevApp, showMainMenuToaster: true, mainMenuToasterText: 'daily finished'}})
+                }else{
+                    setApp(setupGame(true));
+                    setApp(prevApp => {return{...prevApp, showStatsDaily: true}})
+                    newGame();
+                }
                 break;
             case 'btn--free':
-                setApp(setupGame());
-                setApp(prevApp => {return{...prevApp, isDailyMode: false, isFreeMode: true, showStatsDaily: false}})
+                setApp(setupGame(false));
+                setApp(prevApp => {return{...prevApp, showStatsDaily: false}})
                 newGame();
                 break;
             case 'btn--menu':
@@ -299,10 +327,15 @@ export default function App(){
         setRows(setupRows(WORDLE_NUMBER_OF_TRIES, WORDLE_NUMBER_OF_LETTERS));
         setCurrentRow(0);
         setCurrentCell(0);
-        setWord(setupWord());
+
+        if(app.isDailyMode){
+            setWord(setupDailyWord())
+        }else{
+            setWord(setupWord());
+        }
         setKeyboard(setupKeyboard())
     }
-    
+
 
     return(
         <main>
@@ -312,7 +345,7 @@ export default function App(){
             </header>
             {!app.isGameStarted ? 
             <>
-                <div className="btn btn--daily disabled" onClick={onClickHandler}>daily wordle</div>
+                <div className="btn btn--daily" onClick={onClickHandler}>daily wordle</div>
                 <div className="btn btn--free" onClick={onClickHandler}>free wordle</div>
                 <div className="btn btn--stats" onClick={onClickHandler}>stats</div>
                 {app.showMainMenuToaster ? <Toaster value={app.mainMenuToasterText} /> : ''}

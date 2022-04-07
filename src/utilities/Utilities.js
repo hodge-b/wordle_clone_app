@@ -3,7 +3,7 @@ import React from 'react';
 import {nanoid} from 'nanoid';
 
 
-export function setupGame(){
+export function setupGame(daily){
     return {
         id: nanoid(),
         isGameStarted: false,
@@ -14,8 +14,8 @@ export function setupGame(){
         isNotEnoughLetters: false,
         isNotInWordList: false,
         isDailyDone: false,
-        isDailyMode: true,
-        isFreeMode: false,
+        isDailyMode: daily,
+        isFreeMode: !daily,
         showMainMenuToaster: false,
         showStatsModal: false,
         showStatsDaily: true,
@@ -35,7 +35,9 @@ export function setupStats(){
         freeModeTotalGamesWon: 0,
         freeModeCurrentStreak: 0,
         freeModeHighestStreak: 0,
-        freeModeWinPercent: 0
+        freeModeWinPercent: 0,
+        previousDailyWord: '',
+        previousDailyDone: false
     }
 }
 

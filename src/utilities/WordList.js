@@ -1,6 +1,14 @@
 import React from 'react';
 
+export function setupDailyWord(){
+    const startDate = new Date('19 Jun 2021');
+    const list = wordList();
+    const timeDiff = new Date().getTime() - startDate.getTime();
+    const wordleDate = Math.floor(Math.abs(timeDiff / (1000*3600*24))) % list.length;
+    const index =  wordleDate >= list.length ? 0 : (wordleDate + 100);
 
+    return list[index];
+}
 
 export function setupWord(){
     const list = wordList();

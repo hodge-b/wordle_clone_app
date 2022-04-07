@@ -1,7 +1,7 @@
 import React from 'react';
 
 export function saveStateToDevice(key, value){
-    localStorage.setItem(key, value);
+    localStorage.setItem(key, JSON.stringify(value));
 }
 
 export function readStateFromDevice(key, defaultValue = ''){
@@ -9,6 +9,7 @@ export function readStateFromDevice(key, defaultValue = ''){
     const init = JSON.parse(item);
     return init || defaultValue;
 }
+
 
 export function resetStatesOnDevice(){
     // daily mode
